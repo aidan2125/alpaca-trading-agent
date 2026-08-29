@@ -1,7 +1,11 @@
+import os
 import sqlite3
 from datetime import datetime, timezone
 
-TRADES_DB = "data/trades.db"
+# Must match database/trade_logger.py's DEFAULT_DB_PATH so both modules
+# always read/write the same SQLite file regardless of where the process
+# is launched from.
+TRADES_DB = os.getenv("TRADE_DB_PATH", "data/trades.db")
 
 
 def get_daily_realized_pnl(db_path=TRADES_DB, symbol=None):
@@ -12,7 +16,7 @@ def get_daily_realized_pnl(db_path=TRADES_DB, symbol=None):
 
     Args:
         db_path: path to the trades database
-        symbol: if provided, restrict the sum to this symbol only (e.g. "BTC/USDT").
+        symbol: if provided, restrict the sum to this symbol only (e.g. "AAPL").
                  If None, sums across all symbols (account-wide).
     """
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")

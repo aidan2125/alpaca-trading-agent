@@ -1,6 +1,7 @@
 """
 Market Data Fetching Module
-Fetches OHLCV data from exchange using ccxt and returns Polars DataFrame.
+Fetches stock OHLCV data via the Alpaca Markets data API and returns a
+Polars DataFrame.
 """
 
 import logging
@@ -8,7 +9,6 @@ import os
 import time
 from typing import Optional
 
-import ccxt
 import polars as pl
 from datetime import datetime, timezone
 
@@ -16,6 +16,40 @@ from datetime import datetime, timezone
 logger = logging.getLogger(__name__)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Timeframe helper
+# ─────────────────────────────────────────────────────────────────────────────
+
+_TIMEFRAME_MS: dict[str, int] = {
+    "1m":  60_000,
+    "3m":  3  * 60_000,
+    "5m":  5  * 60_000,
+    "15m": 15 * 60_000,
+    "30m": 30 * 60_000,
+    "1h":  60 * 60_000,
+    "2h":  2  * 60 * 60_000,
+    "4h":  4  * 60 * 60_000,
+    "6h":  6  * 60 * 60_000,
+    "8h":  8  * 60 * 60_000,
+    "12h": 12 * 60 * 60_000,
+    "1d":  24 * 60 * 60_000,
+    "3d":  3  * 24 * 60 * 60_000,
+    "1w":  7  * 24 * 60 * 60_000,
+}
+
+
+def _timeframe_to_ms(timeframe: str) -> int:
+    """
+    Convert a timeframe string (e.g. '1h', '15m', '4h', '1d') to milliseconds.
+    Raises ValueError for unrecognised strings.
+    """
+    ms = _TIMEFRAME_MS.get(timeframe.lower())
+    if ms is None:
+        raise ValueError(
+            f"Unrecognised timeframe '{timeframe}'. "
+            f"Supported: {list(_TIMEFRAME_MS)}"
+        )
+    return ms
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -29,8 +63,8 @@ def fetch_stock_ohlcv(
 ) -> Optional[pl.DataFrame]:
     """
     Fetch OHLCV data for a stock ticker via Alpaca Markets data API.
-    Returns a Polars DataFrame with the same schema as fetch_ohlcv() so
-    enhanced_strategy() can consume it without modification.
+    Returns a Polars DataFrame with columns:
+        timestamp, open, high, low, close, volume
 
     Requires env vars:
         ALPACA_API_KEY
@@ -149,7 +183,7 @@ def fetch_stock_ohlcv(
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
-    df = fetch_ohlcv("BTC/USDT", "1h", 3000)
+    df = fetch_stock_ohlcv("AAPL", "1h", 500)
 
     if df is not None:
         print(df.head(5))
