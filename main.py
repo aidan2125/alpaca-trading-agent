@@ -116,9 +116,11 @@ async def run() -> None:
             anthropic_tools = _mcp_tools_to_anthropic_schema(tools_result.tools)
             logger.info(f"Connected to Alpaca MCP server — {len(anthropic_tools)} tools available")
 
-            while True:
-                halted, reason = check_kill_switch()
-                if halted:
+                        while True:
+                # check_kill_switch() returns (True, reason) when trading IS
+                # allowed, and (False, reason) when it's halted.
+                can_trade, reason = check_kill_switch()
+                if not can_trade:
                     _notify_halt(reason)
                 else:
                     try:

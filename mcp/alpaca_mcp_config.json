@@ -1,0 +1,15 @@
+{
+    "mcpServers": {
+      "alpaca": {
+        "_comment": "Launches Alpaca's official MCP server (PyPI: alpaca-mcp-server) as a local stdio subprocess. Values wrapped in ${...} are read from the environment by main.py at startup — put the real values in .env, never in this file.",
+        "command": "alpaca-mcp-server",
+        "args": ["serve"],
+        "env": {
+          "ALPACA_API_KEY": "${ALPACA_API_KEY}",
+          "ALPACA_SECRET_KEY": "${ALPACA_SECRET_KEY}",
+          "ALPACA_PAPER_TRADE": "${ALPACA_PAPER_TRADE}",
+          "ALPACA_TOOLSETS": "trading,options,market_data,account,positions,orders"
+        }
+      }
+    }
+  }

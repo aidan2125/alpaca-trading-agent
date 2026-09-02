@@ -1,32 +1,88 @@
 """
-agent/loop.py — Agent reasoning loop.
+agent/loop.py — Featherless / GLM-5.2 reasoning loop.
 
-STUB: this currently only proves the wiring (MCP session + tool schema +
-settings all reach this function correctly). The next step replaces the
-body of run_cycle() with the real Claude tool-use loop:
-  1. Call Anthropic Messages API with `tools=tools`, a system prompt from
-     agent/prompts.py, and portfolio/market context
-  2. For each tool_use block Claude returns, execute it via
-     `await session.call_tool(name, arguments)`
-  3. Feed tool_result(s) back to Claude, repeat until it stops calling tools
-  4. Apply risk checks (position_sizer, exposure_limiter, drawdown_guard)
-     before any order-placing tool call is actually executed
-  5. Log the resulting decision/trade via database/trade_logger.py
+Step 1:
+    Prove that the trading agent can send a prompt to GLM-5.2
+    through Featherless and receive a response.
+
+No trading tools or orders are executed yet.
 """
 
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
+
+
+def _call_featherless(messages: list[dict], settings) -> str:
+    """Send a chat completion request to Featherless."""
+
+    if not settings.FEATHERLESS_API_KEY:
+        raise RuntimeError("FEATHERLESS_API_KEY is not set")
+
+    url = f"{settings.FEATHERLESS_BASE_URL}/chat/completions"
+
+    headers = {
+        "Authorization": f"Bearer {settings.FEATHERLESS_API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": settings.FEATHERLESS_MODEL,
+        "messages": messages,
+        "temperature": 0.2,
+        "max_tokens": 500,
+    }
+
+    response = requests.post(
+        url,
+        headers=headers,
+        json=payload,
+        timeout=60,
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    return data["choices"][0]["message"]["content"]
 
 
 async def run_cycle(session, tools: list[dict], settings) -> None:
     """
     Run one agent decision cycle.
 
-    Args:
-        session: an open mcp.ClientSession connected to Alpaca's MCP server
-        tools: Anthropic-schema tool definitions discovered from that session
-        settings: config.settings module
+    For now this only tests the Featherless connection.
+    Alpaca MCP tools will be connected in the next step.
     """
-    logger.info(f"[stub] run_cycle called with {len(tools)} tools available — no reasoning logic yet")
-    # TODO: replace with real Claude tool-use loop (see module docstring)
+
+    logger.info("Starting agent reasoning cycle")
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are an AI trading assistant operating in PAPER TRADING mode. "
+                "You must never assume that an order has been executed unless a "
+                "trading tool explicitly confirms it. "
+                "For this test, do not attempt to place any trades."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                "Give me a short status message confirming that you are connected "
+                "and ready to receive Alpaca account and market information."
+            ),
+        },
+    ]
+
+    result = _call_featherless(messages, settings)
+
+    logger.info("GLM-5.2 response received successfully")
+
+    print("\n" + "=" * 70)
+    print("GLM-5.2 RESPONSE")
+    print("=" * 70)
+    print(result)
+    print("=" * 70 + "\n")
