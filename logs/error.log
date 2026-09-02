@@ -1,0 +1,10 @@
+2026-09-02 23:01:48 | ERROR    | __main__                  | Agent cycle failed: FEATHERLESS_API_KEY is not set
+Traceback (most recent call last):
+  File "/home/aidan/alpaca-trading-agent/main.py", line 128, in run
+    await run_cycle(session=session, tools=anthropic_tools, settings=settings)
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 80, in run_cycle
+    result = _call_featherless(messages, settings)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 21, in _call_featherless
+    raise RuntimeError("FEATHERLESS_API_KEY is not set")
+RuntimeError: FEATHERLESS_API_KEY is not set

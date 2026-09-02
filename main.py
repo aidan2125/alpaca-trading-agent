@@ -115,8 +115,9 @@ async def run() -> None:
             tools_result = await session.list_tools()
             anthropic_tools = _mcp_tools_to_anthropic_schema(tools_result.tools)
             logger.info(f"Connected to Alpaca MCP server — {len(anthropic_tools)} tools available")
+            logger.info(f"Connected to Alpaca MCP server — {len(anthropic_tools)} tools available")
 
-                        while True:
+            while True:
                 # check_kill_switch() returns (True, reason) when trading IS
                 # allowed, and (False, reason) when it's halted.
                 can_trade, reason = check_kill_switch()
@@ -130,7 +131,6 @@ async def run() -> None:
                         send_telegram_message(f"\u26A0\uFE0F Agent cycle error: {e}")
 
                 await asyncio.sleep(settings.BOT_INTERVAL_SECONDS)
-
 
 if __name__ == "__main__":
     asyncio.run(run())
