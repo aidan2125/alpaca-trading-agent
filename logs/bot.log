@@ -22,3 +22,112 @@ RuntimeError: FEATHERLESS_API_KEY is not set
 2026-09-02 23:04:48 | INFO     | agent.loop                | GLM-5.2 response received successfully
 2026-09-02 23:09:48 | INFO     | agent.loop                | Starting agent reasoning cycle
 2026-09-02 23:09:51 | INFO     | agent.loop                | GLM-5.2 response received successfully
+2026-09-03 22:44:58 | INFO     | __main__                  | Starting agent — mode=paper, paper=True
+2026-09-03 22:45:01 | INFO     | __main__                  | Connected to Alpaca MCP server — 26 tools available
+2026-09-03 22:45:01 | INFO     | __main__                  | Connected to Alpaca MCP server — 26 tools available
+2026-09-03 22:45:01 | INFO     | agent.loop                | Starting agent reasoning cycle
+2026-09-03 22:45:03 | INFO     | agent.loop                | GLM-5.2 response received successfully
+2026-09-03 22:50:03 | INFO     | agent.loop                | Starting agent reasoning cycle
+2026-09-03 22:50:06 | INFO     | agent.loop                | GLM-5.2 response received successfully
+2026-09-03 22:55:06 | INFO     | agent.loop                | Starting agent reasoning cycle
+2026-09-03 22:55:09 | INFO     | agent.loop                | GLM-5.2 response received successfully
+2026-09-03 23:00:09 | INFO     | agent.loop                | Starting agent reasoning cycle
+2026-09-03 23:00:12 | INFO     | agent.loop                | GLM-5.2 response received successfully
+2026-09-03 23:05:12 | INFO     | agent.loop                | Starting agent reasoning cycle
+2026-09-03 23:05:15 | INFO     | agent.loop                | GLM-5.2 response received successfully
+2026-09-03 23:09:26 | INFO     | __main__                  | Starting agent — mode=paper, paper=True
+2026-09-03 23:09:29 | INFO     | __main__                  | Connected to Alpaca MCP server — 26 tools available
+2026-09-03 23:09:29 | INFO     | __main__                  | Connected to Alpaca MCP server — 26 tools available
+2026-09-03 23:09:29 | INFO     | agent.loop                | Starting agent reasoning cycle
+2026-09-03 23:09:30 | ERROR    | __main__                  | Agent cycle failed: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions
+Traceback (most recent call last):
+  File "/home/aidan/alpaca-trading-agent/main.py", line 128, in run
+    await run_cycle(session=session, tools=anthropic_tools, settings=settings)
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 312, in run_cycle
+    message = _call_featherless(messages, settings, tools=all_tools)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 224, in _call_featherless
+    response.raise_for_status()
+  File "/home/aidan/alpaca-trading-agent/venv/lib/python3.12/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions
+2026-09-03 23:09:30 | INFO     | alerts.telegram_alerts    | Telegram not configured or requests missing; printing message
+2026-09-03 23:14:30 | INFO     | agent.loop                | Starting agent reasoning cycle
+2026-09-03 23:14:32 | ERROR    | __main__                  | Agent cycle failed: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions
+Traceback (most recent call last):
+  File "/home/aidan/alpaca-trading-agent/main.py", line 128, in run
+    logger.warning(f"Kill switch active — skipping cycle: {reason}")
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 312, in run_cycle
+    for round_num in range(1, MAX_TOOL_ROUNDS + 1):
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 224, in _call_featherless
+    response.raise_for_status()
+  File "/home/aidan/alpaca-trading-agent/venv/lib/python3.12/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions
+2026-09-03 23:14:32 | INFO     | alerts.telegram_alerts    | Telegram not configured or requests missing; printing message
+2026-09-03 23:19:32 | INFO     | agent.loop                | Starting agent reasoning cycle
+2026-09-03 23:19:33 | ERROR    | __main__                  | Agent cycle failed: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions
+Traceback (most recent call last):
+  File "/home/aidan/alpaca-trading-agent/main.py", line 128, in run
+    logger.warning(f"Kill switch active — skipping cycle: {reason}")
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 312, in run_cycle
+    for round_num in range(1, MAX_TOOL_ROUNDS + 1):
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 224, in _call_featherless
+    response.raise_for_status()
+  File "/home/aidan/alpaca-trading-agent/venv/lib/python3.12/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions
+2026-09-03 23:19:33 | INFO     | alerts.telegram_alerts    | Telegram not configured or requests missing; printing message
+2026-09-03 23:21:50 | INFO     | __main__                  | Starting agent — mode=paper, paper=True
+2026-09-03 23:21:54 | INFO     | __main__                  | Connected to Alpaca MCP server — 26 tools available
+2026-09-03 23:21:54 | INFO     | agent.loop                | Starting agent reasoning cycle
+2026-09-03 23:21:59 | INFO     | agent.loop                | Round 1: model requested 4 tool call(s)
+2026-09-03 23:22:29 | INFO     | agent.loop                | Round 2: model requested 1 tool call(s)
+2026-09-03 23:22:32 | INFO     | data.market_data          | [stocks] Fetched 357 bars for AAPL (1h)
+2026-09-03 23:22:36 | INFO     | agent.loop                | Round 3: model requested 1 tool call(s)
+2026-09-03 23:22:37 | INFO     | data.market_data          | [stocks] Fetched 510 bars for AAPL (1h)
+2026-09-03 23:23:08 | INFO     | agent.loop                | Round 4: model requested 2 tool call(s)
+2026-09-03 23:23:11 | INFO     | data.market_data          | [stocks] Fetched 1093 bars for SPY (1h)
+2026-09-03 23:23:13 | INFO     | data.market_data          | [stocks] Fetched 1013 bars for AAPL (1h)
+2026-09-03 23:23:18 | INFO     | agent.loop                | Round 5: model requested 3 tool call(s)
+2026-09-03 23:23:19 | INFO     | data.market_data          | [stocks] Fetched 1535 bars for TSLA (1D)
+2026-09-03 23:23:20 | INFO     | data.market_data          | [stocks] Fetched 1535 bars for NVDA (1D)
+2026-09-03 23:23:23 | INFO     | data.market_data          | [stocks] Fetched 1035 bars for TSLA (1h)
+2026-09-03 23:23:28 | INFO     | agent.loop                | Round 6: model requested 3 tool call(s)
+2026-09-03 23:23:29 | INFO     | data.market_data          | [stocks] Fetched 1536 bars for SPY (1D)
+2026-09-03 23:23:31 | INFO     | data.market_data          | [stocks] Fetched 1535 bars for AAPL (1D)
+2026-09-03 23:23:32 | INFO     | data.market_data          | [stocks] Fetched 1535 bars for QQQ (1D)
+2026-09-03 23:23:41 | INFO     | agent.loop                | Round 7: model requested 3 tool call(s)
+2026-09-03 23:23:43 | INFO     | data.market_data          | [stocks] Fetched 1535 bars for AMD (1D)
+2026-09-03 23:23:44 | INFO     | data.market_data          | [stocks] Fetched 1535 bars for META (1D)
+2026-09-03 23:23:49 | INFO     | data.market_data          | [stocks] Fetched 2047 bars for TSLA (1h)
+2026-09-03 23:23:53 | INFO     | agent.loop                | Round 8: model requested 3 tool call(s)
+2026-09-03 23:23:54 | INFO     | data.market_data          | [stocks] Fetched 173 bars for AAPL (1h)
+2026-09-03 23:23:55 | INFO     | data.market_data          | [stocks] Fetched 195 bars for SPY (1h)
+2026-09-03 23:23:56 | INFO     | data.market_data          | [stocks] Fetched 170 bars for TSLA (1h)
+2026-09-03 23:23:56 | WARNING  | agent.loop                | Hit MAX_TOOL_ROUNDS (8) without a final response
+2026-09-03 23:23:56 | INFO     | agent.loop                | Agent reasoning cycle complete
+2026-09-03 23:41:53 | INFO     | __main__                  | Starting agent — mode=paper, paper=True
+2026-09-03 23:41:56 | INFO     | __main__                  | Connected to Alpaca MCP server — 26 tools available
+2026-09-03 23:41:56 | INFO     | agent.loop                | Starting agent reasoning cycle
+2026-09-03 23:42:04 | INFO     | agent.loop                | Round 1: model requested 4 tool call(s)
+2026-09-03 23:42:22 | INFO     | agent.loop                | Round 2: model requested 1 tool call(s)
+2026-09-03 23:42:24 | INFO     | data.market_data          | [stocks] Fetched 357 bars for AAPL (1h)
+2026-09-03 23:42:31 | INFO     | agent.loop                | Round 3: model requested 2 tool call(s)
+2026-09-03 23:42:32 | INFO     | data.market_data          | [stocks] Fetched 383 bars for SPY (1h)
+2026-09-03 23:42:34 | INFO     | data.market_data          | [stocks] Fetched 360 bars for NVDA (1h)
+2026-09-03 23:42:36 | INFO     | agent.loop                | Round 4: model requested 2 tool call(s)
+2026-09-03 23:42:37 | INFO     | data.market_data          | [stocks] Fetched 351 bars for TSLA (1h)
+2026-09-03 23:42:38 | INFO     | data.market_data          | [stocks] Fetched 393 bars for QQQ (1h)
+2026-09-03 23:42:53 | INFO     | agent.loop                | Round 5: model requested 2 tool call(s)
+2026-09-03 23:42:54 | INFO     | data.market_data          | [stocks] Fetched 352 bars for MSFT (1h)
+2026-09-03 23:42:55 | INFO     | data.market_data          | [stocks] Fetched 342 bars for AMD (1h)
+2026-09-03 23:43:02 | INFO     | agent.loop                | Round 6: model requested 2 tool call(s)
+2026-09-03 23:43:03 | INFO     | data.market_data          | [stocks] Fetched 348 bars for META (1h)
+2026-09-03 23:43:04 | INFO     | data.market_data          | [stocks] Fetched 330 bars for AMZN (1h)
+2026-09-03 23:43:23 | INFO     | agent.loop                | Agent reasoning cycle complete
+2026-09-03 23:43:23 | INFO     | database.trade_logger     | decision logged | - CYCLE_COMPLETE [INFO]

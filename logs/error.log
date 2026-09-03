@@ -8,3 +8,41 @@ Traceback (most recent call last):
   File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 21, in _call_featherless
     raise RuntimeError("FEATHERLESS_API_KEY is not set")
 RuntimeError: FEATHERLESS_API_KEY is not set
+2026-09-03 23:09:30 | ERROR    | __main__                  | Agent cycle failed: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions
+Traceback (most recent call last):
+  File "/home/aidan/alpaca-trading-agent/main.py", line 128, in run
+    await run_cycle(session=session, tools=anthropic_tools, settings=settings)
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 312, in run_cycle
+    message = _call_featherless(messages, settings, tools=all_tools)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 224, in _call_featherless
+    response.raise_for_status()
+  File "/home/aidan/alpaca-trading-agent/venv/lib/python3.12/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions
+2026-09-03 23:14:32 | ERROR    | __main__                  | Agent cycle failed: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions
+Traceback (most recent call last):
+  File "/home/aidan/alpaca-trading-agent/main.py", line 128, in run
+    logger.warning(f"Kill switch active — skipping cycle: {reason}")
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 312, in run_cycle
+    for round_num in range(1, MAX_TOOL_ROUNDS + 1):
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 224, in _call_featherless
+    response.raise_for_status()
+  File "/home/aidan/alpaca-trading-agent/venv/lib/python3.12/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions
+2026-09-03 23:19:33 | ERROR    | __main__                  | Agent cycle failed: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions
+Traceback (most recent call last):
+  File "/home/aidan/alpaca-trading-agent/main.py", line 128, in run
+    logger.warning(f"Kill switch active — skipping cycle: {reason}")
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 312, in run_cycle
+    for round_num in range(1, MAX_TOOL_ROUNDS + 1):
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aidan/alpaca-trading-agent/agent/loop.py", line 224, in _call_featherless
+    response.raise_for_status()
+  File "/home/aidan/alpaca-trading-agent/venv/lib/python3.12/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 422 Client Error: Unprocessable Entity for url: https://api.featherless.ai/v1/chat/completions

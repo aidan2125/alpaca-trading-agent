@@ -3,13 +3,15 @@
 database/trade_logger.py
 
 SQLite trade logger — drop-in for main_enhanced.py
-Stores every trade, signal change, heartbeat, and daily P&L summary.
+Stores every trade, signal change, heartbeat, agent decision, and daily
+P&L summary.
 
 Usage in main_enhanced.py:
     from database.trade_logger import TradeLogger
     logger = TradeLogger()                 # opens/creates trades.db
     logger.log_trade(...)                  # call after execute_paper_trade()
     logger.log_signal(...)                 # call after save_last_signals()
+    logger.log_decision(...)               # call once per agent reasoning cycle
     logger.write_heartbeat()               # call at top of each main loop
     logger.daily_summary()                 # call at midnight or on /status
 """
@@ -73,6 +75,25 @@ CREATE TABLE IF NOT EXISTS signals (
     acted_on        INTEGER NOT NULL DEFAULT 0      -- 1 if a trade was placed
 );
 
+-- Agent reasoning-cycle decisions — one row per completed run_cycle().
+-- Distinct from `trades` (only fills placed) and `signals` (only signal
+-- flips): this is "what did the agent conclude this cycle", including
+-- cycles where it looked at the market and decided not to act, or where
+-- a risk gate blocked an attempted order. The dashboard's Decisions and
+-- Trades/Blocked panels both read this table.
+CREATE TABLE IF NOT EXISTS decisions (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts              TEXT    NOT NULL,               -- ISO-8601 UTC
+    symbol          TEXT,                           -- may be NULL for a whole-cycle summary
+    decision        TEXT,                           -- e.g. tool/action name, or 'NO_ACTION'
+    status          TEXT    NOT NULL DEFAULT 'INFO', -- 'INFO' | 'TRADED' | 'BLOCKED' | 'ERROR'
+    confidence      REAL,                           -- 0-100, optional
+    risk_level      TEXT,                           -- optional free-form label
+    reasoning       TEXT,                           -- model's explanation, plain text
+    raw             TEXT,                           -- optional JSON blob (full context)
+    run_id          INTEGER
+);
+
 -- Bot run sessions (each time main() starts)
 CREATE TABLE IF NOT EXISTS runs (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,10 +128,11 @@ CREATE TABLE IF NOT EXISTS daily_summary (
 );
 
 -- Indexes for fast queries
-CREATE INDEX IF NOT EXISTS idx_trades_symbol  ON trades  (symbol);
-CREATE INDEX IF NOT EXISTS idx_trades_ts      ON trades  (ts);
-CREATE INDEX IF NOT EXISTS idx_signals_symbol ON signals (symbol);
-CREATE INDEX IF NOT EXISTS idx_signals_ts     ON signals (ts);
+CREATE INDEX IF NOT EXISTS idx_trades_symbol   ON trades    (symbol);
+CREATE INDEX IF NOT EXISTS idx_trades_ts       ON trades    (ts);
+CREATE INDEX IF NOT EXISTS idx_signals_symbol  ON signals   (symbol);
+CREATE INDEX IF NOT EXISTS idx_signals_ts      ON signals   (ts);
+CREATE INDEX IF NOT EXISTS idx_decisions_ts    ON decisions (ts);
 """
 
 
@@ -354,6 +376,54 @@ class TradeLogger:
                 )
             )
             return cur.lastrowid
+
+    # ── Decision logging ──────────────────────────────────────────────────────
+
+    def log_decision(
+        self,
+        decision: str = None,
+        status: str = "INFO",          # 'INFO' | 'TRADED' | 'BLOCKED' | 'ERROR'
+        symbol: str = None,
+        confidence: float = None,
+        risk_level: str = None,
+        reasoning: str = None,
+        raw: dict = None,
+    ) -> int:
+        """
+        Log one agent reasoning-cycle outcome. Call once per run_cycle(),
+        even on a no-op cycle (status='INFO', decision='NO_ACTION') — the
+        dashboard's Decisions panel has nothing to show on quiet cycles
+        otherwise. On a blocked order, pass status='BLOCKED' so it also
+        surfaces in the dashboard's Trades panel (which filters decisions
+        by status='BLOCKED' alongside real Alpaca orders).
+        """
+        with self._conn() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO decisions (
+                    ts, symbol, decision, status, confidence,
+                    risk_level, reasoning, raw, run_id
+                ) VALUES (?,?,?,?,?,?,?,?,?)
+                """,
+                (
+                    self._now(), symbol, decision, status, confidence,
+                    risk_level, reasoning,
+                    json.dumps(raw, default=str) if raw else None,
+                    self._run_id,
+                )
+            )
+            row_id = cur.lastrowid
+        LOG.info(f"decision logged | {symbol or '-'} {decision or '-'} [{status}]")
+        return row_id
+
+    def get_recent_decisions(self, limit: int = 30) -> list[dict]:
+        """Return the most recent agent decisions as a list of dicts, newest first."""
+        with self._conn() as conn:
+            rows = conn.execute(
+                "SELECT * FROM decisions ORDER BY id DESC LIMIT ?",
+                (limit,)
+            ).fetchall()
+        return [dict(r) for r in rows]
 
     # ── Queries (used by Telegram bot / daily report) ─────────────────────────
 

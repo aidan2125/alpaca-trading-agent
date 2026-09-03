@@ -5,7 +5,8 @@ Responsibilities:
   1. Load settings/.env
   2. Spawn Alpaca's official MCP server (mcp/alpaca_mcp_config.json) as a
      local stdio subprocess and open an MCP ClientSession against it
-  3. Discover its tools and convert them to Anthropic tool-use schema
+  3. Discover its tools and convert them to OpenAI function-calling
+     schema (what Featherless/GLM-5.2 validates against)
   4. Check the kill switch, then hand control to agent.loop for one
      reasoning/trading cycle
   5. Sleep BOT_INTERVAL_SECONDS and repeat
@@ -65,13 +66,23 @@ def _load_mcp_server_params() -> StdioServerParameters:
     )
 
 
-def _mcp_tools_to_anthropic_schema(mcp_tools) -> list[dict]:
-    """Convert MCP tool definitions into the shape the Anthropic Messages API expects."""
+def _mcp_tools_to_openai_schema(mcp_tools) -> list[dict]:
+    """
+    Convert MCP tool definitions into the OpenAI function-calling shape
+    that Featherless (GLM-5.2) validates against. Featherless's own
+    tool-calling docs and GLM-5.2's model page confirm this is the shape
+    to use — NOT Anthropic's flat {name, description, input_schema}
+    format, which this function used to produce and which Featherless's
+    schema validator rejects with a 422.
+    """
     return [
         {
-            "name": tool.name,
-            "description": tool.description or "",
-            "input_schema": tool.inputSchema,
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description or "",
+                "parameters": tool.inputSchema,
+            },
         }
         for tool in mcp_tools
     ]
@@ -113,9 +124,8 @@ async def run() -> None:
             await session.initialize()
 
             tools_result = await session.list_tools()
-            anthropic_tools = _mcp_tools_to_anthropic_schema(tools_result.tools)
-            logger.info(f"Connected to Alpaca MCP server — {len(anthropic_tools)} tools available")
-            logger.info(f"Connected to Alpaca MCP server — {len(anthropic_tools)} tools available")
+            openai_tools = _mcp_tools_to_openai_schema(tools_result.tools)
+            logger.info(f"Connected to Alpaca MCP server — {len(openai_tools)} tools available")
 
             while True:
                 # check_kill_switch() returns (True, reason) when trading IS
@@ -125,7 +135,7 @@ async def run() -> None:
                     _notify_halt(reason)
                 else:
                     try:
-                        await run_cycle(session=session, tools=anthropic_tools, settings=settings)
+                        await run_cycle(session=session, tools=openai_tools, settings=settings)
                     except Exception as e:
                         logger.exception(f"Agent cycle failed: {e}")
                         send_telegram_message(f"\u26A0\uFE0F Agent cycle error: {e}")

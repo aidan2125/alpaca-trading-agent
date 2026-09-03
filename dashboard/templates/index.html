@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Dashboard — Trading Agent</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="shell">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <span class="brand-name">Live Dashboard</span>
+      </div>
+      <ul class="nav-list">
+        <li><a href="#overview" class="nav-link active">Overview</a></li>
+        <li><a href="#portfolio-section" class="nav-link">Portfolio</a></li>
+        <li><a href="#positions-section" class="nav-link">Positions</a></li>
+        <li><a href="#trades-section" class="nav-link">Trades</a></li>
+        <li><a href="#decisions-section" class="nav-link">AI Decisions</a></li>
+        <li><a href="#risk-section" class="nav-link">Risk</a></li>
+        <li><a href="#agent-section" class="nav-link">Agent</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <span id="conn-dot" class="dot dot-unknown"></span>
+        <span id="conn-label">Connecting…</span>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar" id="overview">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+        <div class="topbar-title">
+          <h1>Live Dashboard</h1>
+          <span id="mode-badge" class="mode-badge mode-unknown">● —</span>
+        </div>
+        <div class="topbar-meta">
+          <span id="last-updated">Waiting for data…</span>
+        </div>
+      </header>
+
+      <!-- Portfolio summary cards -->
+      <section class="section" id="portfolio-section">
+        <h2 class="section-title">Portfolio</h2>
+        <div class="card-grid">
+          <div class="stat-card">
+            <span class="stat-label">Portfolio Value</span>
+            <span class="stat-value mono" id="stat-equity">—</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Today's P&amp;L</span>
+            <span class="stat-value mono" id="stat-pnl">—</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Buying Power</span>
+            <span class="stat-value mono" id="stat-buying-power">—</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Cash</span>
+            <span class="stat-value mono" id="stat-cash">—</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Invested</span>
+            <span class="stat-value mono" id="stat-invested">—</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Exposure</span>
+            <span class="stat-value mono" id="stat-exposure">—</span>
+          </div>
+        </div>
+        <div class="pnl-strip">
+          <span>Realized (today): <span class="mono" id="pnl-realized">—</span></span>
+          <span>Unrealized (open): <span class="mono" id="pnl-unrealized">—</span></span>
+          <span>Win rate (today): <span class="mono" id="pnl-winrate">—</span></span>
+          <span class="muted" id="pnl-history-note">Performance history unavailable — no time-series data is persisted yet.</span>
+        </div>
+      </section>
+
+      <div class="two-col">
+        <!-- Positions -->
+        <section class="section" id="positions-section">
+          <h2 class="section-title">Positions</h2>
+          <div class="table-wrap">
+            <table class="data-table" id="positions-table">
+              <thead>
+                <tr>
+                  <th>Symbol</th><th>Side</th><th>Qty</th><th>Avg Entry</th>
+                  <th>Current</th><th>Value</th><th>P&amp;L</th><th>P&amp;L %</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="8" class="empty-row">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- AI Decisions -->
+        <section class="section" id="decisions-section">
+          <h2 class="section-title">AI Decisions</h2>
+          <div class="list-wrap" id="decisions-list">
+            <div class="empty-row">Loading…</div>
+          </div>
+        </section>
+      </div>
+
+      <div class="two-col">
+        <!-- Trades -->
+        <section class="section" id="trades-section">
+          <h2 class="section-title">Recent Trades</h2>
+          <div class="table-wrap">
+            <table class="data-table" id="trades-table">
+              <thead>
+                <tr>
+                  <th>Time</th><th>Symbol</th><th>Side</th><th>Qty</th>
+                  <th>Type</th><th>Fill/Limit</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="7" class="empty-row">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Risk gates -->
+        <section class="section" id="risk-section">
+          <h2 class="section-title">Risk Gates</h2>
+          <div class="list-wrap" id="risk-list">
+            <div class="empty-row">Loading…</div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Agent status -->
+      <section class="section" id="agent-section">
+        <h2 class="section-title">Agent Status</h2>
+        <div class="agent-grid" id="agent-grid">
+          <div class="empty-row">Loading…</div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>Observability interface only — all orders are gated by the existing risk engine.</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
