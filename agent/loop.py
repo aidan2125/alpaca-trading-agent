@@ -220,6 +220,8 @@ def _call_featherless(messages: list[dict], settings, tools: list[dict] | None =
     payload = {
         "model": settings.FEATHERLESS_MODEL,
         "messages": messages,
+        "tools": tools,
+        "tool_choice": "auto",
         "temperature": 0.2,
         "max_tokens": 1500,
     }

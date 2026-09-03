@@ -55,6 +55,7 @@ def _load_mcp_server_params() -> StdioServerParameters:
     alpaca_cfg = cfg["mcpServers"]["alpaca"]
 
     env = dict(alpaca_cfg.get("env", {}))
+
     # ALPACA_PAPER_TRADE isn't a real env var elsewhere in the project —
     # derive it from settings.ALPACA_PAPER so .env only needs ALPACA_MODE.
     env["ALPACA_PAPER_TRADE"] = "True" if settings.ALPACA_PAPER else "False"
@@ -83,6 +84,12 @@ def _mcp_tools_to_openai_schema(mcp_tools) -> list[dict]:
                 "description": tool.description or "",
                 "parameters": tool.inputSchema,
             },
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description or "",
+                "parameters": tool.inputSchema,
+            },
         }
         for tool in mcp_tools
     ]
@@ -91,11 +98,14 @@ def _mcp_tools_to_openai_schema(mcp_tools) -> list[dict]:
 def _start_heartbeat_thread() -> None:
     def _loop():
         count = 0
+
         while True:
             count += 1
             log_heartbeat(count)
+
             if count % 6 == 0:  # every 30 min at the default 5-min interval
                 send_telegram(f"\U0001F493 Agent heartbeat — cycle {count}")
+
             time.sleep(300)
 
     threading.Thread(target=_loop, daemon=True).start()
@@ -108,11 +118,20 @@ def _notify_halt(reason: str) -> None:
 
 
 async def run() -> None:
-    setup_logging(log_dir=settings.LOG_DIR, level=settings.LOG_LEVEL)
-    logger.info(f"Starting agent — mode={settings.TRADING_MODE}, paper={settings.ALPACA_PAPER}")
+    setup_logging(
+        log_dir=settings.LOG_DIR,
+        level=settings.LOG_LEVEL,
+    )
+
+    logger.info(
+        f"Starting agent — mode={settings.TRADING_MODE}, "
+        f"paper={settings.ALPACA_PAPER}"
+    )
 
     if not settings.ALPACA_API_KEY or not settings.ALPACA_SECRET_KEY:
-        logger.error("ALPACA_API_KEY / ALPACA_SECRET_KEY not set — check .env")
+        logger.error(
+            "ALPACA_API_KEY / ALPACA_SECRET_KEY not set — check .env"
+        )
         return
 
     _start_heartbeat_thread()
@@ -131,16 +150,25 @@ async def run() -> None:
                 # check_kill_switch() returns (True, reason) when trading IS
                 # allowed, and (False, reason) when it's halted.
                 can_trade, reason = check_kill_switch()
+
                 if not can_trade:
                     _notify_halt(reason)
+
                 else:
                     try:
                         await run_cycle(session=session, tools=openai_tools, settings=settings)
                     except Exception as e:
-                        logger.exception(f"Agent cycle failed: {e}")
-                        send_telegram_message(f"\u26A0\uFE0F Agent cycle error: {e}")
+                        logger.exception(
+                            f"Agent cycle failed: {e}"
+                        )
 
-                await asyncio.sleep(settings.BOT_INTERVAL_SECONDS)
+                        send_telegram_message(
+                            f"\u26A0\uFE0F Agent cycle error: {e}"
+                        )
+
+                await asyncio.sleep(
+                    settings.BOT_INTERVAL_SECONDS
+                )
 
 if __name__ == "__main__":
     asyncio.run(run())
