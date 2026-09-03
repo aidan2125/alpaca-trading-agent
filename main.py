@@ -5,7 +5,7 @@ Responsibilities:
   1. Load settings/.env
   2. Spawn Alpaca's official MCP server (mcp/alpaca_mcp_config.json) as a
      local stdio subprocess and open an MCP ClientSession against it
-  3. Discover its tools and convert them to Anthropic tool-use schema
+  3. Discover its tools and convert them to OpenAI-compatible tool-use schema
   4. Check the kill switch, then hand control to agent.loop for one
      reasoning/trading cycle
   5. Sleep BOT_INTERVAL_SECONDS and repeat
@@ -54,6 +54,7 @@ def _load_mcp_server_params() -> StdioServerParameters:
     alpaca_cfg = cfg["mcpServers"]["alpaca"]
 
     env = dict(alpaca_cfg.get("env", {}))
+
     # ALPACA_PAPER_TRADE isn't a real env var elsewhere in the project —
     # derive it from settings.ALPACA_PAPER so .env only needs ALPACA_MODE.
     env["ALPACA_PAPER_TRADE"] = "True" if settings.ALPACA_PAPER else "False"
@@ -65,13 +66,16 @@ def _load_mcp_server_params() -> StdioServerParameters:
     )
 
 
-def _mcp_tools_to_anthropic_schema(mcp_tools) -> list[dict]:
-    """Convert MCP tool definitions into the shape the Anthropic Messages API expects."""
+def _mcp_tools_to_openai_schema(mcp_tools) -> list[dict]:
+    """Convert MCP tool definitions to OpenAI-compatible tool schema."""
     return [
         {
-            "name": tool.name,
-            "description": tool.description or "",
-            "input_schema": tool.inputSchema,
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description or "",
+                "parameters": tool.inputSchema,
+            },
         }
         for tool in mcp_tools
     ]
@@ -80,11 +84,14 @@ def _mcp_tools_to_anthropic_schema(mcp_tools) -> list[dict]:
 def _start_heartbeat_thread() -> None:
     def _loop():
         count = 0
+
         while True:
             count += 1
             log_heartbeat(count)
+
             if count % 6 == 0:  # every 30 min at the default 5-min interval
                 send_telegram(f"\U0001F493 Agent heartbeat — cycle {count}")
+
             time.sleep(300)
 
     threading.Thread(target=_loop, daemon=True).start()
@@ -97,11 +104,20 @@ def _notify_halt(reason: str) -> None:
 
 
 async def run() -> None:
-    setup_logging(log_dir=settings.LOG_DIR, level=settings.LOG_LEVEL)
-    logger.info(f"Starting agent — mode={settings.TRADING_MODE}, paper={settings.ALPACA_PAPER}")
+    setup_logging(
+        log_dir=settings.LOG_DIR,
+        level=settings.LOG_LEVEL,
+    )
+
+    logger.info(
+        f"Starting agent — mode={settings.TRADING_MODE}, "
+        f"paper={settings.ALPACA_PAPER}"
+    )
 
     if not settings.ALPACA_API_KEY or not settings.ALPACA_SECRET_KEY:
-        logger.error("ALPACA_API_KEY / ALPACA_SECRET_KEY not set — check .env")
+        logger.error(
+            "ALPACA_API_KEY / ALPACA_SECRET_KEY not set — check .env"
+        )
         return
 
     _start_heartbeat_thread()
@@ -113,24 +129,43 @@ async def run() -> None:
             await session.initialize()
 
             tools_result = await session.list_tools()
-            anthropic_tools = _mcp_tools_to_anthropic_schema(tools_result.tools)
-            logger.info(f"Connected to Alpaca MCP server — {len(anthropic_tools)} tools available")
-            logger.info(f"Connected to Alpaca MCP server — {len(anthropic_tools)} tools available")
 
+            openai_tools = _mcp_tools_to_openai_schema(
+                tools_result.tools
+            )
+
+            logger.info(
+                f"Connected to Alpaca MCP server — "
+                f"{len(openai_tools)} tools available"
+            )
             while True:
                 # check_kill_switch() returns (True, reason) when trading IS
                 # allowed, and (False, reason) when it's halted.
                 can_trade, reason = check_kill_switch()
+
                 if not can_trade:
                     _notify_halt(reason)
+
                 else:
                     try:
-                        await run_cycle(session=session, tools=anthropic_tools, settings=settings)
-                    except Exception as e:
-                        logger.exception(f"Agent cycle failed: {e}")
-                        send_telegram_message(f"\u26A0\uFE0F Agent cycle error: {e}")
+                        await run_cycle(
+                            session=session,
+                            tools=openai_tools,
+                            settings=settings,
+                        )
 
-                await asyncio.sleep(settings.BOT_INTERVAL_SECONDS)
+                    except Exception as e:
+                        logger.exception(
+                            f"Agent cycle failed: {e}"
+                        )
+
+                        send_telegram_message(
+                            f"\u26A0\uFE0F Agent cycle error: {e}"
+                        )
+
+                await asyncio.sleep(
+                    settings.BOT_INTERVAL_SECONDS
+                )
 
 if __name__ == "__main__":
     asyncio.run(run())
